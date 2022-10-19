@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\User;
 
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,7 +13,7 @@ use Illuminate\Validation\Rules\Password;
 class ProfileController extends Controller
 {
     public function profile() {
-        return view('profile');
+        return view('user.profile');
     }
 
     public function changePhoto(Request $request) {
@@ -24,7 +25,7 @@ class ProfileController extends Controller
             'photo.max' => 'A foto não pode ser maior que 1024Kb!',
         ]);
 
-        if (Auth::user()->photo != 'users/user_default.png' && Storage::exists('users/'.$request->photo->getClientOriginalName()))
+        if (Auth::user()->photo != 'users/user_default.png')
             Storage::delete(Auth::user()->photo); // Exclusão de foto
 
         $photo = $request->photo->store('users'); // Upload de foto

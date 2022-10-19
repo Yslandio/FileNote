@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('header_dropdown_li')
-    <li><a class="dropdown-item" href="{{ route('dashboard') }}">Dashboard</a></li>
+    <li><a class="dropdown-item" href="{{ route('user.dashboard') }}">Dashboard</a></li>
 @endsection
 
 @section('content')

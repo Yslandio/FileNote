@@ -28,7 +28,8 @@
                 @include('components.application-logo')
                 <div class="d-flex flex-wrap align-items-center gap-2">
                     @auth
-                        <a href="{{ url('/dashboard') }}" class="btn btn-outline-secondary">Dashboard</a>
+                        <a class="btn btn-outline-secondary" href="@if(Auth::user()->type == 'admin') {{ route('admin.dashboard') }}
+                            @elseif (Auth::user()->type == 'user') {{ route('user.dashboard') }} @endif">Dashboard</a>
                     @else
                         <a href="{{ route('login') }}" class="btn btn-outline-primary">Log in</a>
 

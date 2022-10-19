@@ -1,10 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\User;
 
+use App\Http\Controllers\Controller;
+use App\Models\File;
 use App\Models\Note;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class NoteController extends Controller
 {
@@ -23,7 +26,6 @@ class NoteController extends Controller
     }
 
     public function create(Request $request) {
-        // $dados = $request->except('_token');
         $dados = $this->rules($request);
         $dados['user_id'] = Auth::user()->id;
 
@@ -35,7 +37,7 @@ class NoteController extends Controller
     public function read(Request $request) {
         $search = $request->search;
 
-        return view('dashboard', ['notes' => Note::where('user_id', Auth::user()->id)->where(function ($query) use ($search) {
+        return view('user.dashboard', ['notes' => Note::where('user_id', Auth::user()->id)->where(function ($query) use ($search) {
             if ($search) {
                 $query->where('title', 'LIKE', "%$search%");
                 $query->orWhere('content', 'LIKE', "%$search%");
@@ -53,8 +55,41 @@ class NoteController extends Controller
     }
 
     public function delete(Request $request) {
+        // Excluir arquivos associados
         return Note::find($request->id)->delete()
             ? back()->with('success', 'Anotação excluída com sucesso!')
             : back()->with('fail', 'Ocorreu um erro ao tentar excluir a anotação!');
+    }
+
+    public function storeFile(Request $request) {
+        $request->validate([
+            'note_id' => ['required', 'numeric'],
+            'file' => ['required', 'file', 'max:4096'],
+        ],[
+            'file.required' => 'Selecione um arquivo!',
+            'file' => 'Selecione um arquivo válido!',
+            'max' => 'O arquivo não pode ser maior que 4096Kb!',
+        ]);
+
+        $file = $request->file->store('files'); // Upload de arquivo
+
+        return File::create(['note_id' => $request->note_id, 'directory' => $file])
+            ? back()->with('success', 'Arquivo enviado com sucesso!')
+            : back()->with('fail', 'Ocorreu um erro ao tentar enviar o arquivo!');
+    }
+
+    public function deleteFile(Request $request) {
+        $request->validate([
+            'note_id' => ['required', 'numeric'],
+            'id' => ['required', 'numeric'],
+            'directory' => ['required'],
+        ]);
+
+        if (Storage::exists($request->directory))
+            Storage::delete($request->directory); // Exclusão de arquivo
+
+        return File::find($request->id)->delete()
+            ? back()->with('success', 'Arquivo excluído com sucesso!')
+            : back()->with('fail', 'Ocorreu um erro ao tentar excluir o arquivo!');
     }
 }

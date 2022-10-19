@@ -10,7 +10,11 @@ class File extends Model
     use HasFactory;
 
     protected $fillable = [
-        'file_id',
-        'name',
+        'note_id',
+        'directory',
     ];
+
+    public function note() {
+        return $this->belongsTo(Note::class);
+    }
 }
