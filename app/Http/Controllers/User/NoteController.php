@@ -56,6 +56,13 @@ class NoteController extends Controller
 
     public function delete(Request $request) {
         // Excluir arquivos associados
+        $files = File::where('note_id', $request->id)->get();
+
+        foreach ($files as $file) {
+            if (Storage::exists($file->directory))
+                Storage::delete($file->directory); // Exclusão de arquivo
+        }
+
         return Note::find($request->id)->delete()
             ? back()->with('success', 'Anotação excluída com sucesso!')
             : back()->with('fail', 'Ocorreu um erro ao tentar excluir a anotação!');
