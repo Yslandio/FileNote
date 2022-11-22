@@ -37,12 +37,16 @@ class NoteController extends Controller
     public function read(Request $request) {
         $search = $request->search;
 
-        return view('user.dashboard', ['notes' => Note::where('user_id', Auth::user()->id)->where(function ($query) use ($search) {
-            if ($search) {
-                $query->where('title', 'LIKE', "%$search%");
-                $query->orWhere('content', 'LIKE', "%$search%");
-            }
-        })->orderBy('id', 'desc')->paginate(6)]);
+        // return view('user.dashboard', ['notes' => Note::where('user_id', Auth::user()->id)->where(function ($query) use ($search) {
+        //     if ($search) {
+        //         $query->where('title', 'LIKE', "%$search%");
+        //         $query->orWhere('content', 'LIKE', "%$search%");
+        //     }
+        // })->orderBy('id', 'desc')->paginate(6)]);
+
+        $notes = Note::where('user_id', Auth::user()->id)->where('title', 'LIKE', "%$search%")->orWhere('content', 'LIKE', "%$search%")->orderBy('id', 'desc')->paginate(6);
+
+        return view('user.dashboard', ['notes' => $notes]);
     }
 
     public function update(Request $request) {
@@ -55,7 +59,6 @@ class NoteController extends Controller
     }
 
     public function delete(Request $request) {
-        // Excluir arquivos associados
         $files = File::where('note_id', $request->id)->get();
 
         foreach ($files as $file) {
@@ -71,10 +74,10 @@ class NoteController extends Controller
     public function storeFile(Request $request) {
         $request->validate([
             'note_id' => ['required', 'numeric'],
-            'file' => ['required', 'file', 'max:4096'],
+            'file' => ['required', 'mimes:jpg,png,jpeg,webp', 'max:4096'],
         ],[
             'file.required' => 'Selecione um arquivo!',
-            'file' => 'Selecione um arquivo válido!',
+            'mimes' => 'A extensão do arquivo não é válida! Apenas é permitido jpg, png, jpeg ou webp.',
             'max' => 'O arquivo não pode ser maior que 4096Kb!',
         ]);
 
